@@ -156,6 +156,39 @@ PredictContract.prototype = {
 
   vote: function () {
     // for this demo, each person can vote only once.
+    console.log("vote().  outcome: ", outcome);
+    // todo: sanitize inputs
+    // todo: check phase and timing
+    var from = Blockchain.transaction.from;
+    var value = Blockchain.transaction.value;
+    var blockHeight = new BigNumber(Blockchain.block.height);
+    console.log("from: " + from + ", value: " + value + ", height: " + blockHeight);
+
+    var votes;
+
+    // for demo, we assume only 1 vote per person
+    var voteObj = {
+      user: from,
+      amount: value,
+      outcome: outcome,
+    }
+
+    votes = LocalContractStorage.get("votes");
+    if (!votes) {
+      // votes not exist yet
+      votes = [];
+
+    } else {
+
+    }
+    console.log("votes before adding: ", votes);
+
+    votes.push(voteObj);
+
+    console.log("votes: ", votes);
+    LocalContractStorage.set("votes", votes);
+
+    console.log("vote() ends");
   },
 
   distribute: function() {
@@ -307,7 +340,7 @@ PredictContract.prototype = {
   },
 
   getVotes: function () {
-
+    return LocalContractStorage.get("votes");
   },
 
   /** get distribution info */
