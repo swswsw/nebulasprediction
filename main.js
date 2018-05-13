@@ -106,8 +106,13 @@ PredictContract.prototype = {
     if (!bets) {
       // bets not exist yet
       bets = [];
-      bets.push(betObj);
+
+    } else {
+
     }
+    console.log("bets before adding: ", bets);
+
+    bets.push(betObj);
 
     console.log("bets: ", bets);
     LocalContractStorage.set("bets", bets);
