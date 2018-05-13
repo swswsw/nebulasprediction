@@ -204,6 +204,7 @@ PredictContract.prototype = {
             }
           }
 
+          Event.Trigger("distribute", "betPoolTotal: " + betPoolTotal + ", winnerPoolTotal: " + winnerPoolTotal);
           console.log("betPoolTotal: " + betPoolTotal + ", winnerPoolTotal: " + winnerPoolTotal);
           distribution.betPoolTotal = betPoolTotal;
           distribution.winnerPoolTotal = winnerPoolTotal;
@@ -212,6 +213,7 @@ PredictContract.prototype = {
 
           for (betsIdx = 0; betsIdx < bets.length; betsIdx++) {
             bet = bets[betsIdx];
+            Event.Trigger("distribute", "bets[" + betsIdx + "]: " + JSON.stringify(bet));
             user = bet.user;
             amount = new BigNumber(bet.amount);
             userOutcome = bet.outcome;
@@ -220,9 +222,11 @@ PredictContract.prototype = {
             // payout = ( userAmount / winnerPoolTotal ) * betPoolTotal
             // todo: we might want to floor it to prevent multiple rounding to exceed the total payout
             payoutAmount = amount.times(betPoolTotal).dividedBy(winnerPoolTotal);
+            Event.Trigger("distribute", "payoutAmount: " + payoutAmount);
             console.log("payoutAmount: ", payoutAmount);
 
             if (finalOutcome == userOutcome) {
+              Event.Trigger("distribute", "transfer " + payoutAmount + " to " + user);
               console.log("transfer " + payoutAmount + " to " + user);
               var payoutElem = {
                 user: user,
@@ -231,8 +235,10 @@ PredictContract.prototype = {
               }
               payouts.push(payoutElem);
 
+
               var result = Blockchain.transfer(user, payoutAmount);
               if (!result) {
+                Event.Trigger("distribute", "transfer failed: " + payoutAmount + " to " + user);
                 console.log("transfer failed");
                 throw new Error("transfer failed.");
               }
@@ -240,6 +246,7 @@ PredictContract.prototype = {
           }
 
           LocalContractStorage.set("payouts", payouts);
+          Event.Trigger("distribute", "payouts: " + JSON.stringify(payouts));
         }
       }
     }
