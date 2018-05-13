@@ -246,7 +246,7 @@ PredictContract.prototype = {
   /** get prediction mkt info */
   getMktInfo: function () {
     return LocalContractStorage.get("startInfo");
-  }
+  },
 
   /** return bet from a particular address */
   betOf: function (address) {
@@ -268,7 +268,7 @@ PredictContract.prototype = {
 
   voteOf: function (address) {
 
-  }
+  },
 
   getVotes: function () {
 
@@ -286,7 +286,6 @@ PredictContract.prototype = {
 
 };
 module.exports = PredictContract;
-
 
 
 
