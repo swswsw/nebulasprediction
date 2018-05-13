@@ -74,10 +74,43 @@ PredictContract.prototype = {
   },
 
   start: function (startInfo) {
-    LocalContractStorage.set("startInfo", startInfo);
+    console.log("start()");
+    // todo: sanitize inputs
+    if (startInfo) {
+      var from = Blockchain.transaction.from;
+      var blockHeight = new BigNumber(Blockchain.block.height);
+      startInfo.from = from;
+      LocalContractStorage.set("startInfo", startInfo);
+    }
   },
 
-  bet: function (value) {
+  bet: function (outcome) {
+    console.log("bet()");
+    // todo: sanitize inputs
+    // todo: check phase and timing
+    var from = Blockchain.transaction.from;
+    var value = Blockchain.transaction.value;
+    var blockHeight = new BigNumber(Blockchain.block.height);
+    console.log("from: " + from + ", value: " + value + ", height: " + blockHeight);
+
+    var bets;
+
+    // for demo, we assume only 1 bet per person
+    var betObj = {
+      user: from,
+      amount: value,
+      outcome: outcome,
+    }
+
+    bets = LocalContractStorage.get("bets");
+    if (!bets) {
+      // bets not exist yet
+      bets = {};
+      bets[from] = betObj;
+    }
+
+    console.log("bets: ", bets);
+    LocalContractStorage.set("bets", bets);
   },
 
   oracle: function (outcome) {
@@ -97,12 +130,16 @@ PredictContract.prototype = {
   },
 
   verifyAddress: function (address) {
-
+    // 1-valid, 0-invalid
+    var result = Blockchain.verifyAddress(address);
+    return {
+      valid: result == 0 ? false : true
+    };
   },
 
   /** get prediction mkt info */
   getMktInfo: function () {
-
+    return LocalContractStorage.get("startInfo");
   }
 
   betOf: function (address) {
