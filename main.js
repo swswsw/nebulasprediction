@@ -154,7 +154,7 @@ PredictContract.prototype = {
     console.log("challenge() ends");
   },
 
-  vote: function () {
+  vote: function (outcome) {
     // for this demo, each person can vote only once.
     console.log("vote().  outcome: ", outcome);
     // todo: sanitize inputs
