@@ -156,7 +156,6 @@ PredictContract.prototype = {
 
   vote: function () {
     // for this demo, each person can vote only once.
-
   },
 
   distribute: function() {
@@ -254,7 +253,7 @@ PredictContract.prototype = {
 
               var result = Blockchain.transfer(user, payoutAmount);
               if (!result) {
-                Event.Trigger("distribute"result, "transfer failed: " + payoutAmount + " to " + user);
+                Event.Trigger("distribute", "transfer failed: " + payoutAmount + " to " + user);
                 console.log("transfer failed");
                 throw new Error("transfer failed.");
               } else {
