@@ -157,7 +157,6 @@ PredictContract.prototype = {
     var amount;
     var userOutcome;
     var payoutAmount;
-    var payoutRatio = 2; // you get twice as much as what you bet?
     var betsIdx = 0;
     var betPoolTotal = BigNumber(0);
     var winnerPoolTotal = BigNumber(0);
@@ -255,9 +254,14 @@ PredictContract.prototype = {
   },
 
   /** get distribution info */
-  getPayouts () {
+  getDistribution: function () {
 
   },
+
+  /** get payout info */
+  getPayouts: function () {
+
+  }
 
 };
 module.exports = PredictContract;
