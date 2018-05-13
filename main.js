@@ -163,8 +163,8 @@ PredictContract.prototype = {
     var userOutcome;
     var payoutAmount;
     var betsIdx = 0;
-    var betPoolTotal = BigNumber(0);
-    var winnerPoolTotal = BigNumber(0);
+    var betPoolTotal = new BigNumber(0);
+    var winnerPoolTotal = new BigNumber(0);
     var payouts = [];
     var distribution = {
       betPoolTotal: 0,
@@ -206,7 +206,7 @@ PredictContract.prototype = {
           for (betsIdx = 0; betsIdx < bets.length; betsIdx++) {
             bet = bets[betsIdx];
             user = bet.user;
-            amount = bet.amount;
+            amount = new BigNumber(bet.amount);
             userOutcome = bet.outcome;
             console.log("bet: ", bet);
             // payout is user's bet in proportion to the entire pool.
