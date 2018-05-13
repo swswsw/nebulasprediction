@@ -158,6 +158,9 @@ PredictContract.prototype = {
     var userOutcome;
     var payoutAmount;
     var payoutRatio = 2; // you get twice as much as what you bet?
+    var betsIdx = 0;
+    var betPoolTotal = BigNumber(0);
+    var winnerPoolTotal = BigNumber(0);
     // if not challenged
     if (!challenge) {
       // distribute based on original outcome
@@ -169,13 +172,32 @@ PredictContract.prototype = {
 
         if (bets) {
 
-          for (var i = 0; i < bets.length; i++) {
-            bet = bets[i];
+          // calculate bet pool total and winner pool total amount.
+          // so we can calculate the payout based on ratio
+          // of user bet in the winning pool
+          for (betsIdx = 0; betsIdx < bets.length; betsIdx++) {
+            bet = bets[betsIdx];
             user = bet.user;
             amount = bet.amount;
             userOutcome = bet.outcome;
-            payoutAmount = amount.multipliedBy(payoutRatio);
-            // this is incorrect payout amount.
+            betPoolTotal = betPoolTotal.plus(amount);
+            if (finalOutcome == userOutcome) {
+              // winner pool
+              winnerPoolTotal = winnerPoolTotal.plus(amount);
+            }
+          }
+
+          console.log("betPoolTotal: " + betPoolTotal + ", winnerPoolTotal: " + winnerPoolTotal);
+
+          for (betsIdx = 0; betsIdx < bets.length; betsIdx++) {
+            bet = bets[betsIdx];
+            user = bet.user;
+            amount = bet.amount;
+            userOutcome = bet.outcome;
+            // payout is user's bet in proportion to the entire pool.
+            // payout = ( userAmount / winnerPoolTotal ) * betPoolTotal
+            // todo: we might want to floor it to prevent multiple rounding to exceed the total payout
+            payoutAmount = amount.times(betPoolTotal).dividedBy(winnerPoolTotal);
 
             if (finalOutcome == userOutcome) {
               console.log("transfer " + payoutAmount + " to " + user);
@@ -233,7 +255,7 @@ PredictContract.prototype = {
   },
 
   /** get distribution info */
-  getDistribution () {
+  getPayouts () {
 
   },
 
