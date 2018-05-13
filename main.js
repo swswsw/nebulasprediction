@@ -206,16 +206,17 @@ PredictContract.prototype = {
     return LocalContractStorage.get("startInfo");
   }
 
+  /** return bet from a particular address */
   betOf: function (address) {
 
   },
 
   getBets: function () {
-
+    return LocalContractStorage.get("bets");
   },
 
-  getOracleResult: function () {
-
+  getOracleOutcome: function () {
+    return LocalContractStorage.get("oracleOutcome");
   },
 
   /** return challenge info */
