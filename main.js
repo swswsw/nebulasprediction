@@ -160,6 +160,12 @@ PredictContract.prototype = {
     var betsIdx = 0;
     var betPoolTotal = BigNumber(0);
     var winnerPoolTotal = BigNumber(0);
+    var payouts = [];
+    var distribution = {
+      betPoolTotal: 0,
+      winnerPoolTotal: 0,
+    }
+
     // if not challenged
     if (!challenge) {
       // distribute based on original outcome
@@ -187,16 +193,22 @@ PredictContract.prototype = {
           }
 
           console.log("betPoolTotal: " + betPoolTotal + ", winnerPoolTotal: " + winnerPoolTotal);
+          distribution.betPoolTotal = betPoolTotal;
+          distribution.winnerPoolTotal = winnerPoolTotal;
+          LocalContractStorage.put("distribution", distribution);
+
 
           for (betsIdx = 0; betsIdx < bets.length; betsIdx++) {
             bet = bets[betsIdx];
             user = bet.user;
             amount = bet.amount;
             userOutcome = bet.outcome;
+            console.log("bet: ", bet);
             // payout is user's bet in proportion to the entire pool.
             // payout = ( userAmount / winnerPoolTotal ) * betPoolTotal
             // todo: we might want to floor it to prevent multiple rounding to exceed the total payout
             payoutAmount = amount.times(betPoolTotal).dividedBy(winnerPoolTotal);
+            console.log("payoutAmount: ", payoutAmount);
 
             if (finalOutcome == userOutcome) {
               console.log("transfer " + payoutAmount + " to " + user);
@@ -255,7 +267,7 @@ PredictContract.prototype = {
 
   /** get distribution info */
   getDistribution: function () {
-
+    return LocalContractStorage.get("distribution");
   },
 
   /** get payout info */
