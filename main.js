@@ -212,6 +212,13 @@ PredictContract.prototype = {
 
             if (finalOutcome == userOutcome) {
               console.log("transfer " + payoutAmount + " to " + user);
+              var payoutElem = {
+                user: user,
+                betAmount: amount,
+                payoutAmount: payoutAmount,
+              }
+              payouts.push(payoutElem);
+
               var result = Blockchain.transfer(user, payoutAmount);
               if (!result) {
                 console.log("transfer failed");
@@ -219,6 +226,8 @@ PredictContract.prototype = {
               }
             }
           }
+
+          LocalContractStorage.set("payouts", payouts);
         }
       }
     }
@@ -270,9 +279,9 @@ PredictContract.prototype = {
     return LocalContractStorage.get("distribution");
   },
 
-  /** get payout info */
+  /** get array of payout */
   getPayouts: function () {
-
+    return LocalContractStorage.get("payouts");
   }
 
 };
