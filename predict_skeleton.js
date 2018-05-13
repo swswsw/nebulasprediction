@@ -61,7 +61,7 @@ PredictContract.prototype = {
   },
 
   /** get distribution info */
-  getDistribution () {
+  getDistribution: function () {
 
   },
 
