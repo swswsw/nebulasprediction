@@ -241,6 +241,8 @@ PredictContract.prototype = {
                 Event.Trigger("distribute", "transfer failed: " + payoutAmount + " to " + user);
                 console.log("transfer failed");
                 throw new Error("transfer failed.");
+              } else {
+                Event.Trigger("distribute", "transfer result: " + JSON.stringify(result));
               }
             }
           }
