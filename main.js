@@ -173,20 +173,27 @@ PredictContract.prototype = {
 
     // if not challenged
     if (!challenge) {
-      // distribute based on original outcome
       console.log("no challenge");
-
+      Event.Trigger("distribute", "no challenge");
       finalOutcome = LocalContractStorage.get("oracleOutcome");
+    }
 
-      if (finalOutcome) {
+    Event.Trigger("distribute", "finalOutcome: " + finalOutcome);
+
+    if (true) {
+      // distribute based on original outcome
+
+      if (true) {
 
         if (bets) {
+          Event.Trigger("distribute", "bets: " + JSON.stringify(bets));
 
           // calculate bet pool total and winner pool total amount.
           // so we can calculate the payout based on ratio
           // of user bet in the winning pool
           for (betsIdx = 0; betsIdx < bets.length; betsIdx++) {
             bet = bets[betsIdx];
+            Event.Trigger("distribute", "bets[" + betsIdx + "]: " + JSON.stringify(bet));
             user = bet.user;
             amount = bet.amount;
             userOutcome = bet.outcome;
