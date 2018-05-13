@@ -5,7 +5,7 @@ state info
 
 
 startInfo: {
-  question: "who will win the FIFA 2018",
+  question: "Who will win the FIFA 2018?",
   oracle: "n1rwlkwerwelk6l7kwerer33wlr",
   outcomes: [
     "england",
@@ -135,12 +135,28 @@ PredictContract.prototype = {
     console.log("oracle() ends");
   },
 
-  challenge: function () {
+  challenge: function (outcome) {
+    console.log("challenge().  outcome: ", outcome);
+    // todo: sanitize inputs
+    // todo: check phase and timing
+    var from = Blockchain.transaction.from;
+    var value = Blockchain.transaction.value;
+    var blockHeight = new BigNumber(Blockchain.block.height);
+    console.log("from: " + from + ", value: " + value + ", height: " + blockHeight);
 
+    var challengeObj = {
+      user: from,
+      amount: value,
+      outcome: outcome
+    }
+    LocalContractStorage.set("challenge", challengeObj);
+
+    console.log("challenge() ends");
   },
 
   vote: function () {
     // for this demo, each person can vote only once.
+
   },
 
   distribute: function() {
@@ -238,7 +254,7 @@ PredictContract.prototype = {
 
               var result = Blockchain.transfer(user, payoutAmount);
               if (!result) {
-                Event.Trigger("distribute", "transfer failed: " + payoutAmount + " to " + user);
+                Event.Trigger("distribute"result, "transfer failed: " + payoutAmount + " to " + user);
                 console.log("transfer failed");
                 throw new Error("transfer failed.");
               } else {
@@ -284,7 +300,7 @@ PredictContract.prototype = {
 
   /** return challenge info */
   getChallenge: function () {
-
+    return LocalContractStorage.get("challenge");
   },
 
   voteOf: function (address) {
