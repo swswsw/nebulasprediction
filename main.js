@@ -15,7 +15,7 @@ startInfo: {
   ],
 }
 
-oracleOutcome: -1, // outcome is specified by 0, 1, 2, 3, -1 indicate no outcome yet
+oracleOutcome: 1, // outcome is specified by 0, 1, 2, 3
 
 bets: []
 
@@ -85,7 +85,7 @@ PredictContract.prototype = {
   },
 
   bet: function (outcome) {
-    console.log("bet()");
+    console.log("bet().  outcome: ", outcome);
     // todo: sanitize inputs
     // todo: check phase and timing
     var from = Blockchain.transaction.from;
@@ -105,16 +105,29 @@ PredictContract.prototype = {
     bets = LocalContractStorage.get("bets");
     if (!bets) {
       // bets not exist yet
-      bets = {};
-      bets[from] = betObj;
+      bets = [];
+      bets.push(betObj);
     }
 
     console.log("bets: ", bets);
     LocalContractStorage.set("bets", bets);
+
+    console.log("bet() ends");
   },
 
   oracle: function (outcome) {
     // for this demo, only one oracle result
+    console.log("oracle().  outcome: ", outcome);
+    // todo: sanitize inputs
+    // todo: check phase and timing
+    var from = Blockchain.transaction.from;
+    var value = Blockchain.transaction.value;
+    var blockHeight = new BigNumber(Blockchain.block.height);
+    console.log("from: " + from + ", value: " + value + ", height: " + blockHeight);
+
+    LocalContractStorage.set("oracleOutcome", outcome);
+
+    console.log("oracle() ends");
   },
 
   challenge: function () {
@@ -126,7 +139,58 @@ PredictContract.prototype = {
   },
 
   distribute: function() {
+    // distribute the token based on outcome
+    console.log("distribute()");
+    // todo: check phase and timing
+    var from = Blockchain.transaction.from;
+    var value = Blockchain.transaction.value;
+    var blockHeight = new BigNumber(Blockchain.block.height);
+    console.log("from: " + from + ", value: " + value + ", height: " + blockHeight);
+    // from and value is not used here.
 
+
+    var challenge = LocalContractStorage.get("challenge");
+    var bets = LocalContractStorage.get("bets");
+    var finalOutcome = LocalContractStorage.get("oracleOutcome");
+    var bet;
+    var user;
+    var amount;
+    var userOutcome;
+    var payoutAmount;
+    var payoutRatio = 2; // you get twice as much as what you bet?
+    // if not challenged
+    if (!challenge) {
+      // distribute based on original outcome
+      console.log("no challenge");
+
+      finalOutcome = LocalContractStorage.get("oracleOutcome");
+
+      if (finalOutcome) {
+
+        if (bets) {
+
+          for (var i = 0; i < bets.length; i++) {
+            bet = bets[i];
+            user = bet.user;
+            amount = bet.amount;
+            userOutcome = bet.outcome;
+            payoutAmount = amount.multipliedBy(payoutRatio);
+            // this is incorrect payout amount.
+
+            if (finalOutcome == userOutcome) {
+              console.log("transfer " + payoutAmount + " to " + user);
+              var result = Blockchain.transfer(user, payoutAmount);
+              if (!result) {
+                console.log("transfer failed");
+                throw new Error("transfer failed.");
+              }
+            }
+          }
+        }
+      }
+    }
+
+    console.log("distribute() ends");
   },
 
   verifyAddress: function (address) {
