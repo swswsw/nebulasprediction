@@ -224,6 +224,10 @@ PredictContract.prototype = {
       console.log("no challenge");
       Event.Trigger("distribute", "no challenge");
       finalOutcome = LocalContractStorage.get("oracleOutcome");
+    } else {
+      Event.Trigger("challenged.");
+      countVote();
+
     }
 
     Event.Trigger("distribute", "finalOutcome: " + finalOutcome);
@@ -304,6 +308,40 @@ PredictContract.prototype = {
     console.log("distribute() ends");
   },
 
+  /**
+   * distribute the winning for the vote.
+   * people who vote will get proportional winning if they vote the correct one.
+   * payout is user's vote in proportion to the entire pool.
+   * payout = ( userAmount / winnerPoolTotal ) * votePoolTotal
+   * @return final outcome based on the vote
+   */
+  countVote: function () {
+    let votes = LocalContractStorage.get("votes");
+    // store vote count.
+    // eg. { "1": BigNumber(15), "2": BigNumber(1005) }
+    // outcome: numVotes
+    let voteCount = {};
+
+
+    // find the final outcome
+    // the winning side is the side with more tokens
+    for (let voteIdx = 0; voteIdx < votes.length; voteIdx++) {
+      let vote = votes[voteIdx];
+      let outcome = vote.outcome;
+      if (typeof voteCount[outcome] === "undefined") {
+        voteCount[outcome] = new BigNumber(0);
+      }
+
+      voteCount[outcome] = voteCount[outcome].plus(vote.amount);
+    }
+
+    // event to show the voteCount
+    // save the voteCount
+    LocalContractStorage.set("voteCount", voteCount);
+
+    return voteCount;
+  },
+
   verifyAddress: function (address) {
     // 1-valid, 0-invalid
     var result = Blockchain.verifyAddress(address);
@@ -351,7 +389,15 @@ PredictContract.prototype = {
   /** get array of payout */
   getPayouts: function () {
     return LocalContractStorage.get("payouts");
-  }
+  },
+
+  /** return an object with the vote count for each outcome
+   * eg. { "1": BigNumber(15), "2": BigNumber(1005) }
+   * outcome: numVotes
+   */
+  getVoteCount: function () {
+    return LocalContractStorage.get("voteCount");
+  },
 
 };
 module.exports = PredictContract;
