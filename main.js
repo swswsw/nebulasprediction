@@ -344,17 +344,17 @@ PredictContract.prototype = {
     LocalContractStorage.set("voteCount", voteCount);
 
     // detemine final outcome based on votes
-    let highestVote = BigNumber(0);
+    let highestVote = new BigNumber(0);
     let voteOutcome = UNDEFINED_OUTCOME;
     // if more than 1 outcome has the same vote, one of the outcome will be selected as final outcome.
     // we do not specify who will win in that situation.  but one of the highest voted outcome will win.
     // loop through the voteCount to get the highest votes
-    if (voteCount.keys(obj).length > 0) {
+    if (Object.keys(voteCount).length > 0) {
       // there are votes
       for (let prop in voteCount) {
         if (voteCount.hasOwnProperty(prop)) {
           if (typeof voteCount[prop] !== "undefined") {
-            if (voteCount[prop].lt(highestVote)) {
+            if (voteCount[prop].gt(highestVote)) {
               voteOutcome = parseInt(prop);
               highestVote = voteCount[prop];
             }
@@ -424,6 +424,14 @@ PredictContract.prototype = {
    */
   getVoteCount: function () {
     return LocalContractStorage.get("voteCount");
+  },
+
+  /**
+   * return the outcome based on vote
+   * outcome could be -1 (undefined) if there is no vote
+   */
+  getVoteOutcome: function () {
+    return LocalContractStorage.get("voteOutcome");
   },
 
 };
