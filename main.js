@@ -64,6 +64,8 @@ initMarket1 = {
 }
 */
 
+const UNDEFINED_OUTCOME = -1;
+
 var PredictContract = function () {
 };
 
@@ -231,6 +233,7 @@ PredictContract.prototype = {
     }
 
     Event.Trigger("distribute", "finalOutcome: " + finalOutcome);
+    // todo: deal with situation where there is no oracle outcome
 
     if (true) {
       // distribute based on original outcome
@@ -313,7 +316,7 @@ PredictContract.prototype = {
    * people who vote will get proportional winning if they vote the correct one.
    * payout is user's vote in proportion to the entire pool.
    * payout = ( userAmount / winnerPoolTotal ) * votePoolTotal
-   * @return final outcome based on the vote
+   * @return outcome based on the vote.  -1 if there is no votes
    */
   countVote: function () {
     let votes = LocalContractStorage.get("votes");
@@ -337,9 +340,33 @@ PredictContract.prototype = {
 
     // event to show the voteCount
     // save the voteCount
+    Event.Trigger("countVote", "voteCount: " + voteCount);
     LocalContractStorage.set("voteCount", voteCount);
 
-    return voteCount;
+    // detemine final outcome based on votes
+    let highestVote = BigNumber(0);
+    let voteOutcome = UNDEFINED_OUTCOME;
+    // if more than 1 outcome has the same vote, one of the outcome will be selected as final outcome.
+    // we do not specify who will win in that situation.  but one of the highest voted outcome will win.
+    // loop through the voteCount to get the highest votes
+    if (voteCount.keys(obj).length > 0) {
+      // there are votes
+      for (let prop in voteCount) {
+        if (voteCount.hasOwnProperty(prop)) {
+          if (typeof voteCount[prop] !== "undefined") {
+            if (voteCount[prop].lt(highestVote)) {
+              voteOutcome = parseInt(prop);
+              highestVote = voteCount[prop];
+            }
+          }
+        }
+      }
+    }
+
+    Event.Trigger("countVote", "voteOutcome: " + voteOutcome);
+    LocalContractStorage.set("voteOutcome", voteOutcome);
+
+    return voteOutcome;
   },
 
   verifyAddress: function (address) {
