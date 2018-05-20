@@ -38,7 +38,7 @@ format of challenge
 
 format of vote
 {
-  user: "0xklafj389jky5jhjdasl", // should be an address
+  user: "n1klklfj389jky5jhjdasl", // should be an address
   amount: 1000,
   outcome: 1,
 }
@@ -195,6 +195,7 @@ PredictContract.prototype = {
 
   distribute: function() {
     // distribute the token based on outcome
+    // todo: make sure distribute can only be called once.
     console.log("distribute()");
     // todo: check phase and timing
     var from = Blockchain.transaction.from;
@@ -206,7 +207,8 @@ PredictContract.prototype = {
 
     var challenge = LocalContractStorage.get("challenge");
     var bets = LocalContractStorage.get("bets");
-    var finalOutcome = LocalContractStorage.get("oracleOutcome");
+    var oracleOutcome = LocalContractStorage.get("oracleOutcome");
+    var finalOutcome = oracleOutcome;
     var bet;
     var user;
     var amount;
@@ -220,22 +222,33 @@ PredictContract.prototype = {
       betPoolTotal: 0,
       winnerPoolTotal: 0,
     }
+    var voteOutcome;
 
-    // if not challenged
+    // determine the outcome
     if (!challenge) {
+      // if not challenged
       console.log("no challenge");
       Event.Trigger("distribute", "no challenge");
-      finalOutcome = LocalContractStorage.get("oracleOutcome");
+      finalOutcome = oracleOutcome;
     } else {
       Event.Trigger("challenged.");
-      countVote();
-
+      voteOutcome = countVote();
+      if (voteOutcome === UNDEFINED_OUTCOME) {
+        finalOutcome = oracleOutcome;
+      } else {
+        finalOutcome = voteOutcome;
+      }
     }
 
     Event.Trigger("distribute", "finalOutcome: " + finalOutcome);
+    LocalContractStorage.set("finalOutcome", finalOutcome);
     // todo: deal with situation where there is no oracle outcome
 
-    if (true) {
+    if (challenge && voteOutcome !== UNDEFINED_OUTCOME) {
+      //handlePayout("vote");
+    }
+
+    if (finalOutcome !== UNDEFINED_OUTCOME) {
       // distribute based on original outcome
 
       if (true) {
@@ -263,7 +276,7 @@ PredictContract.prototype = {
           console.log("betPoolTotal: " + betPoolTotal + ", winnerPoolTotal: " + winnerPoolTotal);
           distribution.betPoolTotal = betPoolTotal;
           distribution.winnerPoolTotal = winnerPoolTotal;
-          LocalContractStorage.put("distribution", distribution);
+          LocalContractStorage.set("distribution", distribution);
 
 
           for (betsIdx = 0; betsIdx < bets.length; betsIdx++) {
@@ -367,6 +380,109 @@ PredictContract.prototype = {
     LocalContractStorage.set("voteOutcome", voteOutcome);
 
     return voteOutcome;
+  },
+
+  handlePayout: function (voteOrBet) {
+    // make this a private function.
+    let keywords = {}; // keywords to multiplex between vote and vet
+    if (voteOrBet === "vote") {
+      keywords = {
+        betsInfo: "votes",
+        distributionInfo: "voteDistribution",
+        payoutInfo: "votePayouts",
+        eventKey: "votePayout",
+      }
+
+    } else {
+      keywords = {
+        betsInfo: "bets",
+        distributionInfo: "distribution",
+        payoutsInfo: "payouts",
+        eventKey: "betPayout",
+      }
+    }
+
+    let bets = LocalContractStorage.get(keywords.betsInfo);
+    var finalOutcome = LocalContractStorage.get("finalOutcome");
+    var bet;
+    var user;
+    var amount;
+    var userOutcome;
+    var payoutAmount;
+    var betsIdx = 0;
+    var betPoolTotal = new BigNumber(0);
+    var winnerPoolTotal = new BigNumber(0);
+    var payouts = [];
+    var distribution = {
+      betPoolTotal: 0,
+      winnerPoolTotal: 0,
+    }
+
+    // if (bets) {
+    //   Event.Trigger(keywords.eventKey, "bets: " + JSON.stringify(bets));
+    //
+    //   // calculate bet pool total and winner pool total amount.
+    //   // so we can calculate the payout based on ratio
+    //   // of user bet in the winning pool
+    //   for (betsIdx = 0; betsIdx < bets.length; betsIdx++) {
+    //     bet = bets[betsIdx];
+    //     Event.Trigger(keywords.eventKey, "bets[" + betsIdx + "]: " + JSON.stringify(bet));
+    //     user = bet.user;
+    //     amount = bet.amount;
+    //     userOutcome = bet.outcome;
+    //     betPoolTotal = betPoolTotal.plus(amount);
+    //     if (finalOutcome == userOutcome) {
+    //       // winner pool
+    //       winnerPoolTotal = winnerPoolTotal.plus(amount);
+    //     }
+    //   }
+    //
+    //   Event.Trigger(keywords.eventKey, "betPoolTotal: " + betPoolTotal + ", winnerPoolTotal: " + winnerPoolTotal);
+    //   console.log("betPoolTotal: " + betPoolTotal + ", winnerPoolTotal: " + winnerPoolTotal);
+    //   distribution.betPoolTotal = betPoolTotal;
+    //   distribution.winnerPoolTotal = winnerPoolTotal;
+    //   LocalContractStorage.set(keywords.distributionInfo, distribution);
+    //
+    //
+    //   for (betsIdx = 0; betsIdx < bets.length; betsIdx++) {
+    //     bet = bets[betsIdx];
+    //     Event.Trigger(keywords.eventKey, "bets[" + betsIdx + "]: " + JSON.stringify(bet));
+    //     user = bet.user;
+    //     amount = new BigNumber(bet.amount);
+    //     userOutcome = bet.outcome;
+    //     console.log("bet: ", bet);
+    //     // payout is user's bet in proportion to the entire pool.
+    //     // payout = ( userAmount / winnerPoolTotal ) * betPoolTotal
+    //     // todo: we might want to floor it to prevent multiple rounding to exceed the total payout
+    //     payoutAmount = amount.times(betPoolTotal).dividedBy(winnerPoolTotal);
+    //     Event.Trigger(keywords.eventKey, "payoutAmount: " + payoutAmount);
+    //     console.log("payoutAmount: ", payoutAmount);
+    //
+    //     if (finalOutcome == userOutcome) {
+    //       Event.Trigger(keywords.eventKey, "transfer " + payoutAmount + " to " + user);
+    //       console.log("transfer " + payoutAmount + " to " + user);
+    //       var payoutElem = {
+    //         user: user,
+    //         betAmount: amount,
+    //         payoutAmount: payoutAmount,
+    //       }
+    //       payouts.push(payoutElem);
+    //
+    //
+    //       var result = Blockchain.transfer(user, payoutAmount);
+    //       if (!result) {
+    //         Event.Trigger(keywords.eventKey, "transfer failed: " + payoutAmount + " to " + user);
+    //         console.log("transfer failed");
+    //         throw new Error("transfer failed.");
+    //       } else {
+    //         Event.Trigger(keywords.eventKey, "transfer result: " + JSON.stringify(result));
+    //       }
+    //     }
+    //   }
+    //
+    //   LocalContractStorage.set(keywords.payoutsInfo, payouts);
+    //   Event.Trigger(keywords.eventKey, "payouts: " + JSON.stringify(payouts));
+    // }
   },
 
   verifyAddress: function (address) {
