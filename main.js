@@ -231,7 +231,7 @@ PredictContract.prototype = {
       Event.Trigger("distribute", "no challenge");
       finalOutcome = oracleOutcome;
     } else {
-      Event.Trigger("challenged.");
+      Event.Trigger("distribute", "challenged.");
       voteOutcome = countVote();
       if (voteOutcome === UNDEFINED_OUTCOME) {
         finalOutcome = oracleOutcome;
