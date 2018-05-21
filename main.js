@@ -543,9 +543,18 @@ PredictContract.prototype = {
     return LocalContractStorage.get("distribution");
   },
 
+  /** get distribution info */
+  getVoteDistribution: function () {
+    return LocalContractStorage.get("voteDistribution");
+  },
+
   /** get array of payout */
   getPayouts: function () {
     return LocalContractStorage.get("payouts");
+  },
+
+  getVotePayouts: function () {
+    return LocalContractStorage.get("votePayouts");
   },
 
   /** return an object with the vote count for each outcome
