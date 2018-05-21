@@ -259,6 +259,10 @@ PredictContract.prototype = {
     LocalContractStorage.set("finalOutcome", outcome);
   },
 
+  /**
+   * todo: this should be a private function inside distribute
+   * it is a separate function for easier testing
+   */
   handlePayout: function (voteOrBet) {
     // make this a private function.
     let keywords = {}; // keywords to multiplex between vote and vet
