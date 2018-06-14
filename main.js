@@ -7,12 +7,15 @@ state info
 startInfo: {
   question: "Who will win the FIFA 2018?",
   oracle: "n1rwlkwerwelk6l7kwerer33wlr",
+  // meta data about oracle.  eg. description.W
+  oracleMeta: "http://data.com/oracleinfo", 
   outcomes: [
     "england",
     "italy",
     "brazil",
     "germany"
   ],
+  betEndBlock: 367898, // block height where bet ends
 }
 
 oracleOutcome: 1, // outcome is specified by 0, 1, 2, 3
